@@ -1,0 +1,61 @@
+---
+- name: Install keepalived
+  apt:
+    name: "{{ keepalived_packages }}"
+    state: present
+  ignore_errors: "{{ ansible_check_mode }}"
+
+- name: Divert keepalived default file
+  command: >
+    dpkg-divert --quiet --local
+    --divert /etc/default/keepalived.dpkg-divert
+    --rename /etc/default/keepalived
+  args:
+    creates: "/etc/default/keepalived.dpkg-divert"
+
+- name: Install keepalived default file
+  template:
+    src: etc/default/keepalived.j2
+    dest: "/etc/default/keepalived"
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ keepalived_config_backup }}"
+
+- name: Install keepalived daemon configuration
+  template:
+    src: etc/keepalived/keepalived.conf.j2
+    dest: "/etc/keepalived/keepalived.conf"
+    owner: "{{ keepalived_config_owner }}"
+    group: "{{ keepalived_config_group }}"
+    mode: "{{ keepalived_config_mode }}"
+    backup: "{{ keepalived_config_backup }}"
+    validate: /usr/sbin/keepalived --config-test --use-file=%s
+  vars:
+    _keepalived_config_global: >-
+      {{ keepalived_config_global |
+      combine(keepalived_group_config_global, recursive=True) |
+      combine(keepalived_host_config_global, recursive=True) }}
+    _keepalived_config_vrrp_track_process: >-
+      {{ keepalived_config_vrrp_track_process |
+      combine(keepalived_group_config_vrrp_track_process, recursive=True) |
+      combine(keepalived_host_config_vrrp_track_process, recursive=True) }}
+    _keepalived_config_vrrp_script: >-
+      {{ keepalived_config_vrrp_script |
+      combine(keepalived_group_config_vrrp_script, recursive=True) |
+      combine(keepalived_host_config_vrrp_script, recursive=True) }}
+    _keepalived_config_vrrp_instance: >-
+      {{ keepalived_config_vrrp_instance |
+      combine(keepalived_group_config_vrrp_instance, recursive=True) |
+      combine(keepalived_host_config_vrrp_instance, recursive=True) }}
+  notify: restart keepalived
+  register: _keepalived_config
+
+- name: Enable and start keepalived
+  service:
+    name: keepalived
+    enabled: "{{ keepalived_service_enabled }}"
+    state: >-
+      {{ omit if (_keepalived_config.changed and keepalived_service_state == "started")
+      else keepalived_service_state }}
+  ignore_errors: "{{ ansible_check_mode }}"

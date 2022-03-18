@@ -1,0 +1,21 @@
+---
+keepalived_host_config_global:
+  global_defs:
+    notification_email:
+      - admin3@example.com
+
+local_ipaddr: "{{ ansible_default_ipv4.address }}/{{ ansible_default_ipv4.netmask }}"
+
+keepalived_host_config_vrrp_instance:
+  VIP1:
+    state: MASTER
+    interface: "{{ ansible_default_ipv4.interface }}"
+    virtual_router_id: 101
+    priority: 100
+    unicast_src_ip: "{{ ansible_default_ipv4.address }}"
+    unicast_peer:
+      - "{{ local_ipaddr|ipaddr('next_usable') }}"
+    virtual_ipaddress:
+      - "{{ local_ipaddr|ipaddr('last_usable') }}"
+    track_script:
+      - always_true

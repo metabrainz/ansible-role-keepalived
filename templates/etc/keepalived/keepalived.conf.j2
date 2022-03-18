@@ -1,0 +1,36 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+# {{ ansible_managed }}
+{% import "keepalived-macros.j2" as macros with context %}
+{% if _keepalived_config_global %}
+
+{%   for option, value in _keepalived_config_global|dictsort %}
+{{ macros.keepalived_format_option(option, value) -}}
+{%   endfor %}
+{% endif %}
+{% if _keepalived_config_vrrp_track_process %}
+
+{%   for name, config in _keepalived_config_vrrp_track_process|dictsort %}
+{{ macros.keepalived_config_block(config, "vrrp_track_process", name) -}}
+{%     if not loop.last %}
+
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if _keepalived_config_vrrp_script %}
+
+{%   for name, config in _keepalived_config_vrrp_script|dictsort %}
+{{ macros.keepalived_config_block(config, "vrrp_script", name) -}}
+{%     if not loop.last %}
+
+{%     endif %}
+{%   endfor %}
+{% endif %}
+{% if _keepalived_config_vrrp_instance %}
+
+{%   for name, config in _keepalived_config_vrrp_instance|dictsort %}
+{{ macros.keepalived_config_block(config, "vrrp_instance", name) -}}
+{%     if not loop.last %}
+
+{%     endif %}
+{%   endfor %}
+{% endif %}

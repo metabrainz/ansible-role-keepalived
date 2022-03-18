@@ -1,0 +1,32 @@
+---
+# service options
+keepalived_service_enabled: true
+keepalived_service_state: started
+keepalived_restart_handler_state: restarted
+
+# package options
+keepalived_packages:
+  - keepalived
+
+# configuration options
+keepalived_daemon_args: ""
+keepalived_config_owner: root
+keepalived_config_group: root
+keepalived_config_mode: "0644"
+keepalived_config_backup: false
+
+keepalived_config_global: {}
+keepalived_group_config_global: {}
+keepalived_host_config_global: {}
+
+keepalived_config_vrrp_track_process: {}
+keepalived_group_config_vrrp_track_process: {}
+keepalived_host_config_vrrp_track_process: {}
+
+keepalived_config_vrrp_script: {}
+keepalived_group_config_vrrp_script: {}
+keepalived_host_config_vrrp_script: {}
+
+keepalived_config_vrrp_instance: {}
+keepalived_group_config_vrrp_instance: {}
+keepalived_host_config_vrrp_instance: {}

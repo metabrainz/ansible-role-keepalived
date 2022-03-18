@@ -1,0 +1,27 @@
+#jinja2: trim_blocks: True, lstrip_blocks: True
+
+{% macro keepalived_config_block(config, section, name=None) -%}
+{{ section }}{{ " " + name if name }} {
+{% for option, value in config|dictsort %}
+{{ keepalived_format_option(option, value)|indent(4, true) -}}
+{%   endfor %}
+}
+{% endmacro -%}
+
+{% macro keepalived_format_option(option, value) -%}
+{% if value is string %}
+{{ option }}{{ " " + value if value }}
+{% elif value is bool %}
+{{ option }} {{ value|lower }}
+{% elif value is list %}
+{{ option }} {
+{%   for v in value %}
+{{ v|indent(4, true) }}
+{%   endfor %}
+}
+{% elif value is mapping %}
+{{ keepalived_config_block(value, option, None) -}}
+{% else %}
+{{ option }} {{ value }}
+{% endif %}
+{% endmacro -%}

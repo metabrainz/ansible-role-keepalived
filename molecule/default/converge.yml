@@ -1,0 +1,7 @@
+---
+- name: Converge
+  hosts: all
+  tasks:
+    - name: Include metabrainz.keepalived
+      include_role:
+        name: metabrainz.keepalived

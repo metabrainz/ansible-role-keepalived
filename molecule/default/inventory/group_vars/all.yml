@@ -1,0 +1,19 @@
+---
+keepalived_config_global:
+  child_wait_time: 30
+  global_defs:
+    process_name: ansible
+    notification_email:
+      - admin1@example.com
+      - admin2@example.com
+    enable_script_security: true
+    script_user: nobody
+    smtp_connect_timeout: 10
+    smtp_alert: true
+    lvs_flush: ""
+
+keepalived_group_config_vrrp_script:
+  always_true:
+    script: /bin/true
+    interval: 10
+    weight: 5
