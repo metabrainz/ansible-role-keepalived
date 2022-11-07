@@ -14,8 +14,8 @@ keepalived_host_config_vrrp_instance:
     priority: 100
     unicast_src_ip: "{{ ansible_default_ipv4.address }}"
     unicast_peer:
-      - "{{ local_ipaddr|ipaddr('next_usable') }}"
+      - "{{ local_ipaddr | ipaddr('next_usable') }}"
     virtual_ipaddress:
-      - "{{ local_ipaddr|ipaddr('last_usable') }}"
+      - "{{ local_ipaddr | ipaddr('last_usable') }}"
     track_script:
       - always_true
