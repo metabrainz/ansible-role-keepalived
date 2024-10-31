@@ -1,7 +1,7 @@
 ---
 - name: Restart keepalived
   listen: restart keepalived
-  service:
+  ansible.builtin.service:
     name: keepalived
     state: "{{ keepalived_restart_handler_state }}"
   ignore_errors: "{{ ansible_check_mode }}"

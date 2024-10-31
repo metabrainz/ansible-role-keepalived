@@ -1,31 +1,31 @@
 ---
 - name: Install keepalived
-  apt:
+  ansible.builtin.apt:
     name: "{{ keepalived_packages }}"
     state: present
   ignore_errors: "{{ ansible_check_mode }}"
 
 - name: Divert keepalived default file
-  command: >
+  ansible.builtin.command: >
     dpkg-divert --quiet --local
     --divert /etc/default/keepalived.dpkg-divert
     --rename /etc/default/keepalived
   args:
-    creates: "/etc/default/keepalived.dpkg-divert"
+    creates: /etc/default/keepalived.dpkg-divert
 
 - name: Install keepalived default file
-  template:
+  ansible.builtin.template:
     src: etc/default/keepalived.j2
-    dest: "/etc/default/keepalived"
+    dest: /etc/default/keepalived
     owner: root
     group: root
-    mode: 0644
+    mode: "0644"
     backup: "{{ keepalived_config_backup }}"
 
 - name: Install keepalived daemon configuration
-  template:
+  ansible.builtin.template:
     src: etc/keepalived/keepalived.conf.j2
-    dest: "/etc/keepalived/keepalived.conf"
+    dest: /etc/keepalived/keepalived.conf
     owner: "{{ keepalived_config_owner }}"
     group: "{{ keepalived_config_group }}"
     mode: "{{ keepalived_config_mode }}"
@@ -52,7 +52,7 @@
   register: _keepalived_config
 
 - name: Enable and start keepalived
-  service:
+  ansible.builtin.service:
     name: keepalived
     enabled: "{{ keepalived_service_enabled }}"
     state: >-

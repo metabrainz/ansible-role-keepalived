@@ -4,14 +4,14 @@
   gather_facts: false
   tasks:
     - name: Ensure keepalived is installed
-      stat:
-        path: "/usr/sbin/keepalived"
+      ansible.builtin.stat:
+        path: /usr/sbin/keepalived
       register: result
       changed_when: false
       failed_when: result.stat.isreg is not defined or not result.stat.isreg
 
     - name: Ensure keepalived is running
-      service:
+      ansible.builtin.service:
         name: keepalived
         state: started
       check_mode: true
