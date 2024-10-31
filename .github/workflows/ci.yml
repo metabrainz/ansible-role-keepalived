@@ -13,55 +13,86 @@ defaults:
     working-directory: "metabrainz.keepalived"
 
 jobs:
-
   lint:
     name: Lint
     runs-on: ubuntu-latest
-
     steps:
-      - name: Check out the codebase.
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: "metabrainz.keepalived"
 
-      - name: Set up Python 3.
+      - name: Set up Python 3
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
 
-      - name: Install test dependencies.
+      - name: Install dependencies
         run: pip3 install yamllint ansible ansible-lint
 
-      - name: Lint code.
+      - name: Run lint
         run: |
           yamllint .
           ansible-lint
 
-  molecule:
-    name: Molecule
+  test:
+    name: Test (py${{ matrix.python }} ansible${{ matrix.ansible }} ${{ matrix.distro }})
     runs-on: ubuntu-latest
+    needs:
+      - lint
     strategy:
       matrix:
+        python:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+        ansible:
+          - 8
+          - 9
+          - 10
         distro:
           - ubuntu2004
-
+          - ubuntu2204
+          - ubuntu2404
     steps:
-      - name: Check out the codebase.
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           path: "metabrainz.keepalived"
 
-      - name: Set up Python 3.
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v5
         with:
-          python-version: "3.x"
+          python-version: ${{ matrix.python }}
 
-      - name: Install test dependencies.
-        run: pip3 install ansible molecule-plugins[docker] docker netaddr
+      - name: Generate test-requirements.txt
+        run: |
+          cat <<EOF > test-requirements.txt
+          ansible==${{ matrix.ansible }}.*
+          docker
+          molecule-plugins[docker]
+          # https://github.com/docker/docker-py/issues/3256
+          requests==2.31.0
+          # needed for ansible.utils.ipaddr
+          netaddr
+          EOF
+          echo "REQS_HASH=$(sha256sum test-requirements.txt | awk '{ print $1 }')" >> "$GITHUB_ENV"
 
-      - name: Run Molecule tests.
+      - name: Cache pip directory
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-py${{ matrix.python }}-ansible${{ matrix.ansible }}-${{ env.REQS_HASH }}
+
+      - name: Install test dependencies
+        run: pip3 install -r test-requirements.txt
+
+      - name: Run pip freeze
+        run: pip3 freeze --all
+
+      - name: Run tests
         run: molecule test
         env:
-          PY_COLORS: "1"
-          ANSIBLE_FORCE_COLOR: "1"
+          ANSIBLE_FORCE_COLOR: 1
+          PY_COLORS: 1
           MOLECULE_DISTRO: ${{ matrix.distro }}
