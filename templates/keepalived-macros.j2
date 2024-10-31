@@ -11,7 +11,7 @@
 {% macro keepalived_format_option(option, value) -%}
 {% if value is string %}
 {{ option }}{{ " " + value if value }}
-{% elif value is bool %}
+{% elif value is boolean %}
 {{ option }} {{ value|lower }}
 {% elif value is list %}
 {{ option }} {
